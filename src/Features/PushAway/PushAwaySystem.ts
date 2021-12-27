@@ -1,4 +1,4 @@
-import { ReactiveSystem, UpdateSystem } from '../../ecs/ecs';
+import { ReactiveSystem, UpdateSystem } from '../../ecs/ecs-types';
 import { PushAwayComponent } from './PushAwayComponent';
 
 export const PushAwaySystem: UpdateSystem & ReactiveSystem = {

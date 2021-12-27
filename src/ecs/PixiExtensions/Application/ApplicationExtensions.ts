@@ -1,6 +1,8 @@
 import { Application, DisplayObject } from 'pixi.js';
 
-import { ECSSystem, ECSSystemCached, EntityQuery, ReactiveSystem, UpdateSystem } from '../../ecs';
+import {
+    ECSSystem, ECSSystemCached, EntityQuery, ReactiveSystem, UpdateSystem
+} from '../../ecs-types';
 
 type EcsData = {
   queries: {
@@ -14,8 +16,8 @@ type EcsData = {
     };
   };
   systems: {
-    update: UpdateSystem[];
-    reactive: ReactiveSystem[];
+    update: (UpdateSystem & ECSSystemCached)[];
+    reactive: (ReactiveSystem & ECSSystemCached)[];
     all: ECSSystemCached[];
   };
 };
@@ -59,10 +61,13 @@ Application.prototype.addSystem = function (system: ECSSystem) {
   // create a symbol for the query, if this is the first time we encounter it
   const stringedQuery = system.query.toString();
   const symbol = this.ecs.queries.symbolMap[stringedQuery] ?? Symbol();
+
   if (!this.ecs.queries.symbolMap[stringedQuery]) {
     this.ecs.queries.symbolMap[stringedQuery] = symbol;
   }
-  (system as ECSSystemCached).querySymbol = symbol;
+
+  const cachedSystem = system as ECSSystemCached;
+  cachedSystem.querySymbol = symbol;
 
   // start a cache for the query if it's new
   if (!this.ecs.queries.caches[symbol]) {
@@ -76,13 +81,13 @@ Application.prototype.addSystem = function (system: ECSSystem) {
   this.ecs.systems.all.push(system as ECSSystemCached);
 
   // if system is reactive, add it to reactive list
-  const reactive = system as ReactiveSystem;
+  const reactive = cachedSystem as typeof cachedSystem & ReactiveSystem;
   if (reactive.onAdded || reactive.onRemoved) {
     this.ecs.systems.reactive.push(reactive);
     this.ecs.queries.caches[symbol].reactiveSystems.push(reactive);
   }
 
   // if system is update, add it to update list
-  const update = system as UpdateSystem;
+  const update = cachedSystem as typeof cachedSystem & UpdateSystem;
   if (update.update !== undefined) this.ecs.systems.update.push(update);
 };

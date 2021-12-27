@@ -1,6 +1,6 @@
 import { DisplayObject } from 'pixi.js';
 
-import { Component } from '../../ecs';
+import { Component } from '../../ecs-types';
 
 type OnChangeEvent = (changedEntity: DisplayObject) => void;
 

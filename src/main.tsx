@@ -3,7 +3,8 @@ import '@pixi/math-extras';
 
 import * as PIXI from 'pixi.js';
 
-import { ECSSystem, initEcs, updateLoop } from './ecs/ecs';
+import { initEcs } from './ecs/ecs';
+import { ECSSystem } from './ecs/ecs-types';
 import { Node } from './Features/Nodes/Node';
 
 const app = new PIXI.Application({
@@ -12,12 +13,14 @@ const app = new PIXI.Application({
 });
 
 initEcs(app);
+app.ticker.maxFPS = 60;
 console.log(app);
 
 for (const systemPackage of Object.values(
   import.meta.globEager("./Features/**/*System.ts")
 )) {
-  console.log(systemPackage);
+  const systemName = Object.keys(systemPackage)[0];
+  console.log(`System added: ${systemName}`);
   const system = Object.values(systemPackage) as ECSSystem[];
   app.addSystem(system[0]);
 }
@@ -43,9 +46,9 @@ const style = new PIXI.TextStyle({
 const basicText = new PIXI.Text("Click to add circle", style);
 basicText.x = 10;
 basicText.y = 10;
+app.stage.addChild(basicText);
 
 app.stage.interactive = true;
-app.stage.buttonMode = true;
 app.stage.hitArea = new PIXI.Rectangle(
   0,
   0,
@@ -64,9 +67,4 @@ app.stage.on("pointerdown", (e: PIXI.InteractionEvent) => {
   }
 });
 
-app.stage.addChild(basicText);
-
 document.body.appendChild(app.view);
-
-app.ticker.maxFPS = 60;
-app.ticker.add((dt) => updateLoop(app, dt));

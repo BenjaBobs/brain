@@ -7,6 +7,8 @@ import { initApp } from './PixiExtensions/Application/ApplicationExtensions';
 export function initEcs(app: Application) {
   initApp(app);
   listenForChanges(app.stage);
+  app.ticker.add((deltaTime: number) => updateLoop(app, deltaTime));
+
   app.stage.onChanged = (ent) => {
     const queryCaches = Object.values(app.ecs!.queries.symbolMap).map(
       (sym) => app.ecs!.queries.caches[sym]
@@ -57,32 +59,9 @@ function listenForChanges(entity: DisplayObject) {
   (entity as any).onChildrenChange = patched;
 }
 
-export interface Component {
-  _type: string;
-}
-
-export interface ECSSystem {
-  query: EntityQuery;
-}
-
-export interface ReactiveSystem extends ECSSystem {
-  onAdded?: (entity: DisplayObject) => void;
-  onRemoved?: (entity: DisplayObject) => void;
-}
-
-export interface UpdateSystem extends ECSSystem {
-  update: (entities: DisplayObject[], deltaTime: number) => void;
-}
-
-export interface ECSSystemCached extends ECSSystem {
-  querySymbol: symbol;
-}
-
-export type EntityQuery = (entity: DisplayObject) => boolean;
-
-export function updateLoop(app: Application, deltaTime: number) {
+function updateLoop(app: Application, deltaTime: number) {
   for (const system of app.ecs?.systems.update ?? []) {
-    const symbol = (system as unknown as ECSSystemCached).querySymbol;
+    const symbol = system.querySymbol;
 
     const queryCache = app.ecs!.queries.caches[symbol];
 
