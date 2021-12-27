@@ -11,15 +11,16 @@ export const PushAwaySystem: UpdateSystem & ReactiveSystem = {
         if (entA === entB) continue;
 
         const direction = entA.position.subtract(entB.position);
-        let mag = direction.magnitude();
-        if (mag < 100) {
+        let mag = direction.magnitudeSquared();
+
+        if (mag < 10000) {
           if (mag === 0) {
             mag = 1;
             direction.x += Math.random();
             direction.y += Math.random();
           }
 
-          const factor = 1 / mag;
+          const factor = 10 / mag;
 
           entA.x += direction.x * factor * deltaTime;
           entA.y += direction.y * factor * deltaTime;

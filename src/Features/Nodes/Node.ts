@@ -29,7 +29,7 @@ export const Node = {
     });
 
     const hoverEnt = new Container();
-    hoverEnt.hitArea = new Circle(0, 0, radius * 7);
+    hoverEnt.hitArea = new Circle(0, 0, radius * 5);
     hoverEnt.interactive = true;
     hoverEnt.on("pointerover", (args: InteractionEvent) => {
       const comp = node.getComponent<HoverMenuComponent>(
