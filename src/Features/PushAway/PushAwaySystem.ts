@@ -13,7 +13,7 @@ export const PushAwaySystem: UpdateSystem & ReactiveSystem = {
         const direction = entA.position.subtract(entB.position);
         let mag = direction.magnitudeSquared();
 
-        if (mag < 10000) {
+        if (mag < 15000) {
           if (mag === 0) {
             mag = 1;
             direction.x += Math.random();
