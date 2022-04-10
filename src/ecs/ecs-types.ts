@@ -1,7 +1,9 @@
 import { DisplayObject } from 'pixi.js';
 
-export interface Component {
-  _type: string;
+export abstract class Component {
+  get typename(): string {
+    return (this as any).__proto__.constructor.name;
+  }
 }
 
 export interface ECSSystem {
@@ -21,4 +23,4 @@ export interface ECSSystemCached extends ECSSystem {
   querySymbol: symbol;
 }
 
-export type EntityQuery = (entity: DisplayObject) => boolean;
+export type EntityQuery = (entity: DisplayObject) => boolean | undefined;

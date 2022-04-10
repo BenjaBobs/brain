@@ -1,6 +1,7 @@
 import { DisplayObject } from 'pixi.js';
 
 import { Component } from '../../ecs-types';
+import { CTOR } from '../../utils';
 
 type OnChangeEvent = (changedEntity: DisplayObject) => void;
 
@@ -8,32 +9,36 @@ declare global {
   namespace GlobalMixins {
     interface DisplayObject {
       components?: { [key: string]: Component };
-      getComponent<T extends Component = Component>(key: string): T | undefined;
+      getComponent<T extends Component = Component>(
+        type: CTOR<T>
+      ): T | undefined;
       addComponent<T extends Component>(component: T): void;
-      removeComponent(key: string): void;
+      removeComponent<T extends Component>(type: CTOR<T>): void;
       onChanged: OnChangeEvent;
     }
   }
 }
 
 DisplayObject.prototype.getComponent = function <T extends Component>(
-  key: string
+  type: CTOR<T>
 ) {
-  return this.components?.[key] as T | undefined;
+  return this.components?.[type.name] as T | undefined;
 };
 
 DisplayObject.prototype.addComponent = function <T extends Component>(
   component: T
 ) {
-  if (!this.components) this.components = { [component._type]: component };
-  else this.components[component._type] = component;
+  if (!this.components) this.components = { [component.typename]: component };
+  else this.components[component.typename] = component;
 
   this.onChanged(this);
 };
 
-DisplayObject.prototype.removeComponent = function (key: string) {
-  if (this.components?.[key] !== undefined) {
-    delete this.components?.[key];
+DisplayObject.prototype.removeComponent = function <T extends Component>(
+  type: CTOR<T>
+) {
+  if (this.components?.[type.name] !== undefined) {
+    delete this.components?.[type.name];
     this.onChanged(this);
   }
 };

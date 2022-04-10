@@ -16,13 +16,16 @@ initEcs(app);
 app.ticker.maxFPS = 60;
 console.log(app);
 
-for (const systemPackage of Object.values(
-  import.meta.globEager("./Features/**/*System.ts")
+for (const [fileName, fileExports] of Object.entries(
+  import.meta.globEager("./Features/**/*.ts")
 )) {
-  const systemName = Object.keys(systemPackage)[0];
-  console.log(`System added: ${systemName}`);
-  const system = Object.values(systemPackage) as ECSSystem[];
-  app.addSystem(system[0]);
+  console.log(`Registering features in ${fileName}`);
+  for (const [key, value] of Object.entries(fileExports)) {
+    if (key.endsWith("System")) {
+      console.log(`  System: ${key}`);
+      app.addSystem(value as ECSSystem);
+    }
+  }
 }
 
 const style = new PIXI.TextStyle({

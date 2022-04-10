@@ -1,39 +1,47 @@
 import { Container, Text, TextStyle } from 'pixi.js';
 
 import { Component, ReactiveSystem } from '../../ecs/ecs-types';
-import { HoverMenuComponent, HoverMenuComponentType } from './HoverMenuComponent';
+import { HoverableComponent } from '../Hoverable/HoverableComponent';
+import { HoverMenuComponent } from './HoverMenuComponent';
 
-const _menuItem: Component = {
-  _type: "_menuItem",
-};
+class MenuItem extends Component {}
 
 export const HoverMenuSystem: ReactiveSystem = {
-  query: (ent) =>
-    ent.getComponent<HoverMenuComponent>(HoverMenuComponentType)?.active ??
-    false,
-  onAdded: (ent) => {
-    const comp = ent.getComponent<HoverMenuComponent>(HoverMenuComponentType)!;
-    if ((ent as Container).addChild) {
-      const cont = ent as Container;
-      let idx = 0;
-      for (const item of comp.menuItems) {
-        const textItem = text(item);
-        textItem.addComponent(_menuItem);
-        textItem.transform.position.x += 20;
-        textItem.transform.position.y +=
-          (textItem.style.fontSize as number) * ++idx + -70;
+  query: (ent) => {
+    const menu = ent.getComponent(HoverMenuComponent);
+    const hover = ent.getComponent(HoverableComponent);
 
-        cont.addChild(textItem);
+    return !!menu && hover?.isHovered;
+  },
+  onAdded: (ent) => {
+    const container = ent as Container;
+    const hoverMenu = ent.getComponent(HoverMenuComponent)!;
+
+    if (container.addChild) {
+      let idx = 0;
+      for (const menuItem of hoverMenu.menuItems) {
+        const menuItemEntity = text(menuItem.text);
+        menuItemEntity.addComponent(new MenuItem());
+        menuItemEntity.interactive = true;
+        menuItemEntity.on("pointerdown", menuItem.onClick);
+        menuItemEntity.transform.position.x += 20;
+        menuItemEntity.transform.position.y +=
+          (menuItemEntity.style.fontSize as number) * ++idx -
+          hoverMenu.menuItems.length *
+            (menuItemEntity.style.fontSize as number);
+
+        container.addChild(menuItemEntity);
       }
     }
   },
   onRemoved: (ent) => {
     const cont = ent as Container;
 
-    const menuItems = cont.children.filter((c) =>
-      c.getComponent(_menuItem._type)
-    );
+    const menuItems = cont.children.filter((c) => c.getComponent(MenuItem));
     cont.removeChild(...menuItems);
+    for (const menuItem of menuItems) {
+      menuItem.destroy();
+    }
   },
 };
 

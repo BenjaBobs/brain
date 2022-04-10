@@ -2,7 +2,7 @@ import { ReactiveSystem, UpdateSystem } from '../../ecs/ecs-types';
 import { PushAwayComponent } from './PushAwayComponent';
 
 export const PushAwaySystem: UpdateSystem & ReactiveSystem = {
-  query: (ent) => !!ent.getComponent(PushAwayComponent._type),
+  query: (ent) => !!ent.getComponent(PushAwayComponent),
   onAdded: (ent) => console.log("PushAway added", ent.transform._worldID),
   onRemoved: (ent) => console.log("PushAway removed", ent.transform._worldID),
   update: (entities, deltaTime) => {
